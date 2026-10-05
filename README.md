@@ -13,3 +13,6 @@ Features in this first build:
 Open GitHub Actions and run **Build APK** manually. The workflow uploads `app-debug.apk` as an artifact.
 
 This is an original implementation; it does not include proprietary File Manager Plus source code or assets.
+
+
+Build trigger test.
