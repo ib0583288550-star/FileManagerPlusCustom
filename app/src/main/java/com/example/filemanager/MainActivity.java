@@ -101,23 +101,7 @@ public class MainActivity extends Activity {
 
         box.setClickable(true);
         box.setFocusable(true);
-        return boxAsText(box);
-    }
-
-    TextView boxAsText(LinearLayout box){
-        return new ButtonAdapter(box,this);
-    }
-
-    static class ButtonAdapter extends TextView {
-        LinearLayout target;
-        ButtonAdapter(LinearLayout t,Context c){
-            super(c); target=t;
-            setBackground(t.getBackground());
-            setElevation(t.getElevation());
-            setGravity(Gravity.CENTER);
-            setText("");
-            addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->{});
-        }
+        return box;
     }
 
     ArrayList<StorageVolume> vols(){
