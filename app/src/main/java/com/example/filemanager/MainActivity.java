@@ -14,7 +14,7 @@ import java.util.*;
 public class MainActivity extends Activity {
     LinearLayout body;
     int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
-    int bg=Color.rgb(246,248,251), dark=Color.rgb(20,28,38), blue=Color.rgb(24,115,220), gray=Color.rgb(105,116,130);
+    int bg=Color.rgb(10,15,23), dark=Color.rgb(238,243,250), blue=Color.rgb(30,110,220), gray=Color.rgb(145,158,176), card=Color.rgb(18,26,38);
 
     GradientDrawable shape(int color,int radius){
         GradientDrawable g=new GradientDrawable();
@@ -35,14 +35,14 @@ public class MainActivity extends Activity {
         root.setGravity(Gravity.CENTER_HORIZONTAL);
         root.setBackgroundColor(bg);
 
-        TextView title=label("מנהל אחסון",23,dark);
+        TextView title=label("כונן חכם",21,dark);
         title.setTypeface(null,1);
         root.addView(title,new LinearLayout.LayoutParams(-1,dp(82)));
 
         body=new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
         body.setGravity(Gravity.CENTER_HORIZONTAL);
-        body.setPadding(dp(22),dp(8),dp(22),dp(24));
+        body.setPadding(dp(18),dp(6),dp(18),dp(18));
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
 
         setContentView(root);
@@ -54,32 +54,32 @@ public class MainActivity extends Activity {
         ArrayList<StorageVolume> removable=new ArrayList<>();
         for(StorageVolume v:vols()) if(v.isRemovable()) removable.add(v);
 
-        TextView sub=label(removable.isEmpty()?"לא נמצא אחסון נשלף":"אחסון נשלף",15,gray);
+        TextView sub=label(removable.isEmpty()?"לא נמצא כונן נשלף":"כוננים נשלפים",15,gray);
         body.addView(sub,new LinearLayout.LayoutParams(-1,dp(38)));
 
         if(!removable.isEmpty()){
             StorageVolume v=removable.get(0);
 
-            TextView state=label("SD / כונן חיצוני\n"+v.getState(),14,dark);
+            TextView state=label(volumeName(v)+"\n"+v.getState(),14,dark);
             state.setTypeface(null,1);
-            state.setBackground(shape(Color.WHITE,22));
+            state.setBackground(shape(card,20));
             state.setElevation(dp(2));
-            LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(78));
-            sp.bottomMargin=dp(24);
+            LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(70));
+            sp.bottomMargin=dp(18);
             body.addView(state,sp);
 
             LinearLayout row=new LinearLayout(this);
             row.setGravity(Gravity.CENTER);
             row.setOrientation(LinearLayout.HORIZONTAL);
 
-            LinearLayout eject=roundButton("⏏","הוצאה בטוחה",Color.rgb(235,238,243),dark);
+            LinearLayout eject=roundButton("⏏","הוצאה",Color.rgb(28,38,52),dark);
             eject.setOnClickListener(x->rootCmd("unmount",v));
-            LinearLayout mount=roundButton("↻","טעינה מחדש",blue,Color.WHITE);
+            LinearLayout mount=roundButton("↻","טעינה",blue,Color.WHITE);
             mount.setOnClickListener(x->rootCmd("mount",v));
 
-            row.addView(eject,new LinearLayout.LayoutParams(dp(132),dp(132)));
-            Space gap=new Space(this); row.addView(gap,new LinearLayout.LayoutParams(dp(18),1));
-            row.addView(mount,new LinearLayout.LayoutParams(dp(132),dp(132)));
+            row.addView(eject,new LinearLayout.LayoutParams(dp(104),dp(104)));
+            Space gap=new Space(this); row.addView(gap,new LinearLayout.LayoutParams(dp(14),1));
+            row.addView(mount,new LinearLayout.LayoutParams(dp(104),dp(104)));
             body.addView(row);
         }
     }
@@ -91,13 +91,13 @@ public class MainActivity extends Activity {
         box.setBackground(shape(color,28));
         box.setElevation(dp(3));
 
-        TextView i=label(icon,34,textColor);
+        TextView i=label(icon,29,textColor);
         i.setGravity(Gravity.CENTER);
-        box.addView(i,new LinearLayout.LayoutParams(-1,dp(58)));
+        box.addView(i,new LinearLayout.LayoutParams(-1,dp(46)));
 
         TextView t=label(text,13,textColor);
         t.setTypeface(null,1);
-        box.addView(t,new LinearLayout.LayoutParams(-1,dp(32)));
+        box.addView(t,new LinearLayout.LayoutParams(-1,dp(28)));
 
         box.setClickable(true);
         box.setFocusable(true);
@@ -106,6 +106,13 @@ public class MainActivity extends Activity {
 
     ArrayList<StorageVolume> vols(){
         return new ArrayList<>(((StorageManager)getSystemService(STORAGE_SERVICE)).getStorageVolumes());
+    }
+
+
+    String volumeName(StorageVolume v){
+        String uuid=v.getUuid();
+        if(uuid!=null && !uuid.trim().isEmpty()) return "אחסון נשלף • "+uuid;
+        return "כונן USB / OTG";
     }
 
     void rootCmd(String a,StorageVolume v){
