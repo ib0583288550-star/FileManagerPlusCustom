@@ -72,9 +72,9 @@ public class MainActivity extends Activity {
             row.setGravity(Gravity.CENTER);
             row.setOrientation(LinearLayout.HORIZONTAL);
 
-            TextView eject=roundButton("⏏","הוצאה בטוחה",Color.rgb(235,238,243),dark);
+            LinearLayout eject=roundButton("⏏","הוצאה בטוחה",Color.rgb(235,238,243),dark);
             eject.setOnClickListener(x->rootCmd("unmount",v));
-            TextView mount=roundButton("↻","טעינה מחדש",blue,Color.WHITE);
+            LinearLayout mount=roundButton("↻","טעינה מחדש",blue,Color.WHITE);
             mount.setOnClickListener(x->rootCmd("mount",v));
 
             row.addView(eject,new LinearLayout.LayoutParams(dp(132),dp(132)));
@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    TextView roundButton(String icon,String text,int color,int textColor){
+    LinearLayout roundButton(String icon,String text,int color,int textColor){
         LinearLayout box=new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER);
