@@ -67,5 +67,41 @@ public class MainActivity extends Activity {
     void pick(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);startActivityForResult(i,PICK);}
     @Override protected void onActivityResult(int q,int r,Intent d){super.onActivityResult(q,r,d);if(q==PICK&&r==RESULT_OK&&d!=null){Uri u=d.getData();try{getContentResolver().takePersistableUriPermission(u,d.getFlags()&(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION));}catch(Exception e){}p.edit().putString("target","external").putString("tree",u.toString()).apply();render();}}
     void writeTest(){try{String x=p.getString("tree",null);DocumentFile d=x==null?DocumentFile.fromFile(getFilesDir()):DocumentFile.fromTreeUri(this,Uri.parse(x));if(d==null)throw new IOException("לא נמצאה תיקייה");DocumentFile f=d.createFile("text/plain","StorageTest.txt");if(f==null)throw new IOException("לא ניתן ליצור קובץ");OutputStream o=getContentResolver().openOutputStream(f.getUri());o.write(("נוצר "+new Date()).getBytes("UTF-8"));o.close();Toast.makeText(this,"✓ הקובץ נוצר",Toast.LENGTH_SHORT).show();}catch(Exception e){Toast.makeText(this,"כתיבה נכשלה: "+e.getMessage(),Toast.LENGTH_LONG).show();}}
-    void rootCmd(String a,StorageVolume v){String u=v.getUuid();if(u==null){Toast.makeText(this,"אין UUID לכונן",Toast.LENGTH_SHORT).show();return;}new Thread(()->{try{String cmd="sm "+a+" "+u;java.lang.Process q=new ProcessBuilder("su","-c",cmd).redirectErrorStream(true).start();java.io.InputStream is=q.getInputStream();java.io.ByteArrayOutputStream b=new java.io.ByteArrayOutputStream();byte[] buf=new byte[1024];int n;while((n=is.read(buf))!=-1)b.write(buf,0,n);int c=q.waitFor();String out=b.toString("UTF-8").trim();runOnUiThread(()->new AlertDialog.Builder(this).setTitle(a.equals("unmount")?"הוצאה בטוחה":"טעינה מחדש").setMessage(c==0?"בוצע בהצלחה":("הפקודה נכשלה (קוד "+c+")"+(out.isEmpty()?"":"\n\n"+out))).setPositiveButton("אישור",null).show());}catch(Exception e){runOnUiThread(()->Toast.makeText(this,"Root לא זמין: "+e.getMessage(),Toast.LENGTH_LONG).show());}}).start();}
+    void rootCmd(String a,StorageVolume v){
+        new Thread(()->{
+            try{
+                String uuid=v.getUuid();
+                String list=runRoot("sm list-volumes all");
+                String id=null;
+                if(uuid!=null){
+                    for(String line:list.split("\\n")){
+                        String[] z=line.trim().split("\\s+");
+                        if(z.length>=3 && uuid.equalsIgnoreCase(z[2])){id=z[0];break;}
+                    }
+                }
+                if(id==null) throw new IOException("לא נמצא מזהה sm לכונן.\n"+list);
+                String cmd="sm "+a+" "+id;
+                String out=runRoot(cmd);
+                runOnUiThread(()->new AlertDialog.Builder(this)
+                    .setTitle(a.equals("unmount")?"הוצאה בטוחה":"טעינה מחדש")
+                    .setMessage("בוצע בהצלחה: "+cmd+(out.isEmpty()?"":"\n\n"+out))
+                    .setPositiveButton("אישור",null).show());
+            }catch(Exception e){
+                runOnUiThread(()->new AlertDialog.Builder(this)
+                    .setTitle("פקודת Root נכשלה")
+                    .setMessage(String.valueOf(e.getMessage()))
+                    .setPositiveButton("אישור",null).show());
+            }
+        }).start();
+    }
+    String runRoot(String cmd)throws Exception{
+        Process q=new ProcessBuilder("su","-c",cmd).redirectErrorStream(true).start();
+        ByteArrayOutputStream b=new ByteArrayOutputStream();
+        InputStream is=q.getInputStream(); byte[] buf=new byte[1024]; int n;
+        while((n=is.read(buf))!=-1)b.write(buf,0,n);
+        int code=q.waitFor();
+        String out=b.toString("UTF-8").trim();
+        if(code!=0) throw new IOException("קוד "+code+"\n"+(out.isEmpty()?"ללא פלט":out));
+        return out;
+    }
 }
