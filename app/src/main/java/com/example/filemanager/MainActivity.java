@@ -58,24 +58,80 @@ public class MainActivity extends Activity {
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(12),dp(10),dp(12),dp(10));
 
-        LinearLayout bar=new LinearLayout(this); bar.setGravity(Gravity.CENTER_VERTICAL);
-        TextView title=tv("File Manager",23);
+        LinearLayout bar=new LinearLayout(this);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setPadding(dp(4),0,dp(2),0);
+
+        TextView title=tv("File Manager",22);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
-        bar.addView(title,new LinearLayout.LayoutParams(0,dp(58),1));
-        Button edit=new Button(this); edit.setText("עריכת אריחים");
-        edit.setOnClickListener(v->editMode());
-        bar.addView(edit,new LinearLayout.LayoutParams(-2,dp(50)));
+        title.setTextColor(Color.rgb(35,35,35));
+        bar.addView(title,new LinearLayout.LayoutParams(0,dp(56),1));
+
+        Button search=new Button(this);
+        search.setText("⌕");
+        search.setTextSize(24);
+        search.setContentDescription("חיפוש");
+        search.setOnClickListener(v->showSearchDialog());
+        bar.addView(search,new LinearLayout.LayoutParams(dp(52),dp(52)));
+
+        Button menu=new Button(this);
+        menu.setText("⋮");
+        menu.setTextSize(24);
+        menu.setContentDescription("תפריט");
+        menu.setOnClickListener(v->showMainMenu());
+        bar.addView(menu,new LinearLayout.LayoutParams(dp(52),dp(52)));
         root.addView(bar);
 
+        LinearLayout subBar=new LinearLayout(this);
+        subBar.setGravity(Gravity.CENTER_VERTICAL);
         TextView subtitle=tv("קטגוריות",14);
         subtitle.setTextColor(Color.GRAY);
-        subtitle.setPadding(dp(6),0,dp(6),dp(8));
-        root.addView(subtitle);
+        subtitle.setPadding(dp(6),0,0,0);
+        subBar.addView(subtitle,new LinearLayout.LayoutParams(0,dp(42),1));
+
+        Button edit=smallActionButton("עריכת אריחים");
+        edit.setOnClickListener(v->editMode());
+        subBar.addView(edit,new LinearLayout.LayoutParams(-2,dp(40)));
+        root.addView(subBar);
 
         ScrollView sv=new ScrollView(this);
         list=new LinearLayout(this); list.setOrientation(LinearLayout.VERTICAL);
         sv.addView(list); root.addView(sv,new LinearLayout.LayoutParams(-1,0,1));
         renderHome(); setContentView(root);
+    }
+
+    Button smallActionButton(String text){
+        Button b=new Button(this);
+        b.setText(text);
+        b.setTextSize(13);
+        b.setAllCaps(false);
+        b.setPadding(dp(8),0,dp(8),0);
+        return b;
+    }
+
+    void showSearchDialog(){
+        final EditText input=new EditText(this);
+        input.setSingleLine(true);
+        input.setHint("שם קובץ");
+        new AlertDialog.Builder(this)
+            .setTitle("חיפוש")
+            .setView(input)
+            .setNegativeButton("ביטול",null)
+            .setPositiveButton("חפש",(d,w)->{
+                String q=input.getText().toString().trim();
+                if(q.isEmpty()) return;
+                Toast.makeText(this,"חיפוש: "+q,Toast.LENGTH_SHORT).show();
+            }).show();
+    }
+
+    void showMainMenu(){
+        String[] items={"עריכת אריחים","בחירת תיקיית ברירת מחדל"};
+        new AlertDialog.Builder(this)
+            .setTitle("תפריט")
+            .setItems(items,(d,which)->{
+                if(which==0) editMode();
+                else Toast.makeText(this,"אפשר לבחור תיקייה מתוך קטגוריה מותאמת אישית",Toast.LENGTH_LONG).show();
+            }).show();
     }
 
     TextView cardView(String category){
