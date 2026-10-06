@@ -56,15 +56,21 @@ public class MainActivity extends Activity {
 
     void buildHome(){
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(8),dp(8),dp(8),dp(8));
+        root.setPadding(dp(12),dp(10),dp(12),dp(10));
 
         LinearLayout bar=new LinearLayout(this); bar.setGravity(Gravity.CENTER_VERTICAL);
-        TextView title=tv("File Manager",22);
-        bar.addView(title,new LinearLayout.LayoutParams(0,dp(56),1));
-        Button edit=new Button(this); edit.setText("עריכת קטגוריות");
+        TextView title=tv("File Manager",23);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        bar.addView(title,new LinearLayout.LayoutParams(0,dp(58),1));
+        Button edit=new Button(this); edit.setText("עריכת אריחים");
         edit.setOnClickListener(v->editMode());
-        bar.addView(edit,new LinearLayout.LayoutParams(-2,dp(52)));
+        bar.addView(edit,new LinearLayout.LayoutParams(-2,dp(50)));
         root.addView(bar);
+
+        TextView subtitle=tv("קטגוריות",14);
+        subtitle.setTextColor(Color.GRAY);
+        subtitle.setPadding(dp(6),0,dp(6),dp(8));
+        root.addView(subtitle);
 
         ScrollView sv=new ScrollView(this);
         list=new LinearLayout(this); list.setOrientation(LinearLayout.VERTICAL);
@@ -72,13 +78,37 @@ public class MainActivity extends Activity {
         renderHome(); setContentView(root);
     }
 
+    TextView cardView(String category){
+        TextView card=tv(icon(category)+"\\n"+category,16);
+        card.setGravity(Gravity.CENTER);
+        card.setTypeface(null, android.graphics.Typeface.BOLD);
+        card.setTextColor(Color.DKGRAY);
+        card.setPadding(dp(6),dp(10),dp(6),dp(10));
+        android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();
+        bg.setColor(Color.WHITE);
+        bg.setCornerRadius(dp(14));
+        bg.setStroke(dp(1),Color.LTGRAY);
+        card.setBackground(bg);
+        card.setElevation(dp(2));
+        card.setOnClickListener(v->openCategory(category));
+        return card;
+    }
+
     void renderHome(){
         list.removeAllViews();
-        for(String c:cats){
-            TextView row=tv(icon(c)+"   "+c,18);
-            row.setBackgroundColor(Color.WHITE);
-            row.setOnClickListener(v->openCategory(c));
-            list.addView(row,new LinearLayout.LayoutParams(-1,dp(62)));
+        int columns=2;
+        LinearLayout row=null;
+        for(int i=0;i<cats.size();i++){
+            if(i%columns==0){
+                row=new LinearLayout(this);
+                row.setGravity(Gravity.CENTER);
+                row.setPadding(0,dp(3),0,dp(3));
+                list.addView(row,new LinearLayout.LayoutParams(-1,dp(100)));
+            }
+            TextView card=cardView(cats.get(i));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(94),1);
+            lp.setMargins(dp(4),dp(2),dp(4),dp(2));
+            row.addView(card,lp);
         }
     }
 
