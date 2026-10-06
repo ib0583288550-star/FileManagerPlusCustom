@@ -79,17 +79,31 @@ public class MainActivity extends Activity {
     }
 
     TextView cardView(String category){
-        TextView card=tv(icon(category)+"\\n"+category,16);
+        TextView card=tv(icon(category)+"\\n"+category,15);
         card.setGravity(Gravity.CENTER);
         card.setTypeface(null, android.graphics.Typeface.BOLD);
         card.setTextColor(Color.DKGRAY);
-        card.setPadding(dp(6),dp(10),dp(6),dp(10));
+        card.setPadding(dp(4),dp(9),dp(4),dp(9));
+
+        int bgColor=Color.rgb(245,247,250);
+        if(category.equals("Images")) bgColor=Color.rgb(232,240,254);
+        else if(category.equals("Videos")) bgColor=Color.rgb(252,235,235);
+        else if(category.equals("Audio")) bgColor=Color.rgb(239,232,252);
+        else if(category.equals("Documents")) bgColor=Color.rgb(255,246,224);
+        else if(category.equals("Downloads")) bgColor=Color.rgb(232,247,238);
+        else if(category.equals("Apps")) bgColor=Color.rgb(235,244,250);
+
         android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();
-        bg.setColor(Color.WHITE);
-        bg.setCornerRadius(dp(14));
-        bg.setStroke(dp(1),Color.LTGRAY);
+        bg.setColor(bgColor);
+        bg.setCornerRadius(dp(16));
+        bg.setStroke(dp(1),Color.rgb(225,228,233));
         card.setBackground(bg);
         card.setElevation(dp(2));
+
+        if(Build.VERSION.SDK_INT>=21){
+            android.content.res.ColorStateList ripple=android.content.res.ColorStateList.valueOf(Color.argb(35,0,0,0));
+            card.setForeground(new android.graphics.drawable.RippleDrawable(ripple,null,null));
+        }
         card.setOnClickListener(v->openCategory(category));
         return card;
     }
