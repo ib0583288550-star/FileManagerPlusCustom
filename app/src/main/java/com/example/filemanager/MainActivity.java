@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
         }).start();
     }
     String runRoot(String cmd)throws Exception{
-        Process q=new ProcessBuilder("su","-c",cmd).redirectErrorStream(true).start();
+        java.lang.Process q=new ProcessBuilder("su","-c",cmd).redirectErrorStream(true).start();
         ByteArrayOutputStream b=new ByteArrayOutputStream();
         InputStream is=q.getInputStream(); byte[] buf=new byte[1024]; int n;
         while((n=is.read(buf))!=-1)b.write(buf,0,n);
