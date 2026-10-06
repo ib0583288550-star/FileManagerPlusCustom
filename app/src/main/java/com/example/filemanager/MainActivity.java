@@ -73,10 +73,17 @@ public class MainActivity extends Activity {
                 String uuid=v.getUuid();
                 String list=runRoot("sm list-volumes all");
                 String id=null;
-                if(uuid!=null){
-                    for(String line:list.split("\\n")){
+                if(uuid!=null && !uuid.trim().isEmpty()){
+                    for(String line:list.split("\\r?\\n")){
                         String[] z=line.trim().split("\\s+");
-                        if(z.length>=3 && uuid.equalsIgnoreCase(z[2])){id=z[0];break;}
+                        if(z.length>=1){
+                            for(String token:z){
+                                if(uuid.equalsIgnoreCase(token) || token.toLowerCase(Locale.US).contains(uuid.toLowerCase(Locale.US))){
+                                    id=z[0]; break;
+                                }
+                            }
+                        }
+                        if(id!=null) break;
                     }
                 }
                 if(id==null) throw new IOException("לא נמצא מזהה sm לכונן.\n"+list);
