@@ -55,17 +55,15 @@ public class MainActivity extends Activity {
         for(StorageVolume v:vols()) if(v.isRemovable()) removable.add(v);
 
         TextView sub=label(removable.isEmpty()?"לא נמצא כונן נשלף":"כוננים נשלפים",15,gray);
-        body.addView(sub,new LinearLayout.LayoutParams(-1,dp(38)));
+        body.addView(sub,new LinearLayout.LayoutParams(-1,dp(34)));
 
-        if(!removable.isEmpty()){
-            StorageVolume v=removable.get(0);
-
+        for(StorageVolume v:removable){
             TextView state=label(volumeName(v)+"\n"+v.getState(),14,dark);
             state.setTypeface(null,1);
             state.setBackground(shape(card,20));
             state.setElevation(dp(2));
             LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(70));
-            sp.bottomMargin=dp(18);
+            sp.bottomMargin=dp(12);
             body.addView(state,sp);
 
             LinearLayout row=new LinearLayout(this);
@@ -78,9 +76,12 @@ public class MainActivity extends Activity {
             mount.setOnClickListener(x->rootCmd("mount",v));
 
             row.addView(eject,new LinearLayout.LayoutParams(dp(104),dp(104)));
-            Space gap=new Space(this); row.addView(gap,new LinearLayout.LayoutParams(dp(14),1));
+            Space gap=new Space(this);
+            row.addView(gap,new LinearLayout.LayoutParams(dp(14),1));
             row.addView(mount,new LinearLayout.LayoutParams(dp(104),dp(104)));
-            body.addView(row);
+            LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(104));
+            rp.bottomMargin=dp(20);
+            body.addView(row,rp);
         }
     }
 
