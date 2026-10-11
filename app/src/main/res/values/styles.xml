@@ -8,4 +8,8 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+    <style name="TileConfirmTheme" parent="android:style/Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">#176BCE</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
 </resources>
