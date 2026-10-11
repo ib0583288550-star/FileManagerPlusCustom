@@ -31,3 +31,4 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
 
 # final-build-trigger
+# trigger version 1.10 APK build
