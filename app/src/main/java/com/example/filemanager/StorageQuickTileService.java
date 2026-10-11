@@ -12,7 +12,8 @@ public class StorageQuickTileService extends TileService {
     }
     @Override public void onClick() {
         super.onClick();
-        Intent i=new Intent(this, MainActivity.class);
+        boolean ask=getSharedPreferences("storage_settings",MODE_PRIVATE).getBoolean("tile_ask",true);
+        Intent i=new Intent(this, ask ? TileConfirmActivity.class : MainActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivityAndCollapse(i);
     }
