@@ -39,9 +39,12 @@ public class MainActivity extends Activity {
         title.setTypeface(null,1);
         LinearLayout header=new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
+        TextView settings=label("⚙",22,dark);
+        settings.setOnClickListener(v->tileSettings());
+        header.addView(settings,new LinearLayout.LayoutParams(dp(48),dp(62)));
         TextView refresh=label("↻",27,dark);
         refresh.setOnClickListener(v->{render(); Toast.makeText(this,"רשימת האחסון רועננה",Toast.LENGTH_SHORT).show();});
-        header.addView(refresh,new LinearLayout.LayoutParams(dp(54),dp(62)));
+        header.addView(refresh,new LinearLayout.LayoutParams(dp(48),dp(62)));
         header.addView(title,new LinearLayout.LayoutParams(0,dp(62),1));
         root.addView(header);
 
@@ -53,6 +56,19 @@ public class MainActivity extends Activity {
 
         setContentView(root);
         render();
+    }
+
+    void tileSettings(){
+        boolean ask=getSharedPreferences("storage_settings",MODE_PRIVATE).getBoolean("tile_ask",true);
+        String[] options={"לפתוח את האפליקציה מיד","להציג חלונית אישור: כן / לא"};
+        new AlertDialog.Builder(this)
+            .setTitle("התנהגות אריח ההגדרות")
+            .setSingleChoiceItems(options,ask?1:0,(dialog,which)->{
+                getSharedPreferences("storage_settings",MODE_PRIVATE).edit().putBoolean("tile_ask",which==1).apply();
+                dialog.dismiss();
+                Toast.makeText(this,which==1?"האריח יציג חלונית אישור":"האריח יפתח את האפליקציה מיד",Toast.LENGTH_SHORT).show();
+            })
+            .setNegativeButton("סגירה",null).show();
     }
 
     void render(){
