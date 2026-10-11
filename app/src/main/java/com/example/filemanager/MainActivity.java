@@ -35,9 +35,15 @@ public class MainActivity extends Activity {
         root.setGravity(Gravity.CENTER_HORIZONTAL);
         root.setBackgroundColor(bg);
 
-        TextView title=label("כונן חכם",21,dark);
+        TextView title=label("מנהל אחסון",21,dark);
         title.setTypeface(null,1);
-        root.addView(title,new LinearLayout.LayoutParams(-1,dp(82)));
+        LinearLayout header=new LinearLayout(this);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        TextView refresh=label("↻",27,dark);
+        refresh.setOnClickListener(v->{render(); Toast.makeText(this,"רשימת האחסון רועננה",Toast.LENGTH_SHORT).show();});
+        header.addView(refresh,new LinearLayout.LayoutParams(dp(54),dp(62)));
+        header.addView(title,new LinearLayout.LayoutParams(0,dp(62),1));
+        root.addView(header);
 
         body=new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
@@ -51,10 +57,14 @@ public class MainActivity extends Activity {
 
     void render(){
         body.removeAllViews();
+        ArrayList<StorageVolume> all=vols();
         ArrayList<StorageVolume> removable=new ArrayList<>();
-        for(StorageVolume v:vols()) if(v.isRemovable()) removable.add(v);
+        TextView internal=label("📱  אחסון פנימי\\n"+android.os.Environment.getExternalStorageState(),14,dark);
+        internal.setTypeface(null,1); internal.setBackground(shape(card,20));
+        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(-1,dp(66)); ip.bottomMargin=dp(10); body.addView(internal,ip);
+        for(StorageVolume v:all) if(v.isRemovable()) removable.add(v);
 
-        TextView sub=label(removable.isEmpty()?"לא נמצא כונן נשלף":"כוננים נשלפים",15,gray);
+        TextView sub=label(removable.isEmpty()?"לא זוהה אחסון חיצוני או OTG":"אחסון חיצוני / כונני OTG",15,gray);
         body.addView(sub,new LinearLayout.LayoutParams(-1,dp(34)));
 
         for(StorageVolume v:removable){
@@ -111,9 +121,13 @@ public class MainActivity extends Activity {
 
 
     String volumeName(StorageVolume v){
-        String uuid=v.getUuid();
-        if(uuid!=null && !uuid.trim().isEmpty()) return "אחסון נשלף • "+uuid;
-        return "כונן USB / OTG";
+        String desc="";
+        try { desc=v.getDescription(this); } catch(Exception ignored) {}
+        String d=desc==null?"":desc.toLowerCase(Locale.ROOT);
+        if(d.contains("usb") || d.contains("otg")) return "🔌  אחסון OTG / USB";
+        if(d.contains("sd")) return "💳  אחסון חיצוני • כרטיס SD";
+        if(v.getUuid()!=null) return "💳  אחסון חיצוני • כרטיס SD";
+        return "🔌  אחסון OTG / USB";
     }
 
     void rootCmd(String a,StorageVolume v){
