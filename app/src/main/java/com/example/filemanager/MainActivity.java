@@ -28,6 +28,15 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
         build();
+        String action=getIntent().getStringExtra("tile_action");
+        if(action!=null) {
+            StorageVolume v=findVolumeForAction(action);
+            if(v!=null) rootCmd(action,v);
+            else new AlertDialog.Builder(this).setTitle("לא נמצא כרטיס")
+                .setMessage("לא זוהה כרטיס חיצוני זמין לפעולה. חבר את הכרטיס ולחץ על רענון.")
+                .setPositiveButton("אישור",null).show();
+            getIntent().removeExtra("tile_action");
+        }
     }
     void build(){
         LinearLayout root=new LinearLayout(this);
@@ -40,10 +49,10 @@ public class MainActivity extends Activity {
         LinearLayout header=new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
         TextView settings=label("⚙",22,dark);
-        settings.setOnClickListener(v->tileSettings());
+        settings.setOnClickListener(v->about());
         header.addView(settings,new LinearLayout.LayoutParams(dp(48),dp(62)));
         TextView refresh=label("↻",27,dark);
-        refresh.setOnClickListener(v->{render(); Toast.makeText(this,"רשימת האחסון רועננה",Toast.LENGTH_SHORT).show();});
+        refresh.setOnClickListener(v->{render(); Toast.makeText(this,"זיהוי האחסון רוענן",Toast.LENGTH_SHORT).show();});
         header.addView(refresh,new LinearLayout.LayoutParams(dp(48),dp(62)));
         header.addView(title,new LinearLayout.LayoutParams(0,dp(62),1));
         root.addView(header);
@@ -51,81 +60,98 @@ public class MainActivity extends Activity {
         body=new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
         body.setGravity(Gravity.CENTER_HORIZONTAL);
-        body.setPadding(dp(18),dp(6),dp(18),dp(18));
+        body.setPadding(dp(14),dp(8),dp(14),dp(18));
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
 
         setContentView(root);
         render();
     }
 
-    void tileSettings(){
-        boolean ask=getSharedPreferences("storage_settings",MODE_PRIVATE).getBoolean("tile_ask",true);
-        String[] options={"לפתוח את האפליקציה מיד","להציג חלונית אישור: כן / לא"};
-        new AlertDialog.Builder(this)
-            .setTitle("התנהגות אריח ההגדרות")
-            .setSingleChoiceItems(options,ask?1:0,(dialog,which)->{
-                getSharedPreferences("storage_settings",MODE_PRIVATE).edit().putBoolean("tile_ask",which==1).apply();
-                dialog.dismiss();
-                Toast.makeText(this,which==1?"האריח יציג חלונית אישור":"האריח יפתח את האפליקציה מיד",Toast.LENGTH_SHORT).show();
-            })
-            .setNegativeButton("סגירה",null).show();
+    void about(){
+        new AlertDialog.Builder(this).setTitle("מנהל אחסון")
+            .setMessage("זיהוי אחסון חיצוני ו־OTG, רענון הרשימה וטעינה או הוצאה בטוחה.\n\ny.b apps")
+            .setPositiveButton("אישור",null).show();
     }
 
     void render(){
         body.removeAllViews();
-        ArrayList<StorageVolume> all=vols();
         ArrayList<StorageVolume> removable=new ArrayList<>();
-        TextView internal=label("📱  אחסון פנימי\\n"+android.os.Environment.getExternalStorageState(),14,dark);
-        internal.setTypeface(null,1); internal.setBackground(shape(card,20));
-        LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(-1,dp(66)); ip.bottomMargin=dp(10); body.addView(internal,ip);
-        for(StorageVolume v:all) if(v.isRemovable()) removable.add(v);
+        for(StorageVolume v:vols()) if(v.isRemovable()) removable.add(v);
 
-        TextView sub=label(removable.isEmpty()?"לא זוהה אחסון חיצוני או OTG":"אחסון חיצוני / כונני OTG",15,gray);
-        body.addView(sub,new LinearLayout.LayoutParams(-1,dp(34)));
+        if(removable.isEmpty()){
+            TextView empty=label("לא זוהה אחסון חיצוני או OTG\nחבר כרטיס ולחץ על רענון",15,gray);
+            empty.setBackground(shape(card,18));
+            body.addView(empty,new LinearLayout.LayoutParams(-1,dp(92)));
+            return;
+        }
 
         for(StorageVolume v:removable){
-            TextView state=label(volumeName(v)+"\n"+v.getState(),14,dark);
-            state.setTypeface(null,1);
-            state.setBackground(shape(card,20));
-            state.setElevation(dp(2));
-            LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(70));
-            sp.bottomMargin=dp(12);
-            body.addView(state,sp);
-
             LinearLayout row=new LinearLayout(this);
-            row.setGravity(Gravity.CENTER);
             row.setOrientation(LinearLayout.HORIZONTAL);
-
-            LinearLayout eject=roundButton("⏏","הוצאה",Color.rgb(28,38,52),dark);
-            eject.setOnClickListener(x->rootCmd("unmount",v));
-            LinearLayout mount=roundButton("↻","טעינה",blue,Color.WHITE);
-            mount.setOnClickListener(x->rootCmd("mount",v));
-
-            row.addView(eject,new LinearLayout.LayoutParams(dp(104),dp(104)));
-            Space gap=new Space(this);
-            row.addView(gap,new LinearLayout.LayoutParams(dp(14),1));
-            row.addView(mount,new LinearLayout.LayoutParams(dp(104),dp(104)));
+            row.setGravity(Gravity.CENTER_VERTICAL);
+            row.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
             LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(104));
-            rp.bottomMargin=dp(20);
+            rp.bottomMargin=dp(12);
+
+            LinearLayout info=new LinearLayout(this);
+            info.setOrientation(LinearLayout.VERTICAL);
+            info.setGravity(Gravity.CENTER_VERTICAL);
+            info.setPadding(dp(8),dp(8),dp(8),dp(8));
+            info.setBackground(shape(card,18));
+            info.setElevation(dp(1));
+            TextView name=label(volumeName(v),14,dark);
+            name.setTypeface(null,1);
+            name.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+            TextView state=label(stateText(v),12,stateColor(v));
+            state.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+            info.addView(name,new LinearLayout.LayoutParams(-1,dp(36)));
+            info.addView(state,new LinearLayout.LayoutParams(-1,dp(28)));
+            row.addView(info,new LinearLayout.LayoutParams(0,dp(88),1));
+
+            LinearLayout controls=new LinearLayout(this);
+            controls.setOrientation(LinearLayout.VERTICAL);
+            controls.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(dp(78),dp(92));
+            cp.leftMargin=dp(8);
+
+            LinearLayout mount=smallButton("↻","טעינה",blue,Color.WHITE);
+            mount.setOnClickListener(x->confirmAction(v,"mount"));
+            LinearLayout eject=smallButton("⏏","הוצאה",Color.rgb(28,38,52),dark);
+            eject.setOnClickListener(x->confirmAction(v,"unmount"));
+            controls.addView(mount,new LinearLayout.LayoutParams(-1,dp(42)));
+            Space gap=new Space(this);
+            controls.addView(gap,new LinearLayout.LayoutParams(1,dp(6)));
+            controls.addView(eject,new LinearLayout.LayoutParams(-1,dp(42)));
+            row.addView(controls,cp);
+
             body.addView(row,rp);
         }
     }
 
-    LinearLayout roundButton(String icon,String text,int color,int textColor){
+    void confirmAction(StorageVolume v,String action){
+        boolean mounted="mounted".equalsIgnoreCase(v.getState());
+        String actual=action;
+        String message;
+        if("unmount".equals(action)){
+            message="האם להוציא את "+volumeName(v)+"?";
+        }else{
+            message="האם לטעון את "+volumeName(v)+"?";
+        }
+        new AlertDialog.Builder(this).setTitle("אישור פעולה").setMessage(message)
+            .setPositiveButton("כן",(d,w)->rootCmd(actual,v))
+            .setNegativeButton("לא",null).show();
+    }
+
+    LinearLayout smallButton(String icon,String text,int color,int textColor){
         LinearLayout box=new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
+        box.setOrientation(LinearLayout.HORIZONTAL);
         box.setGravity(Gravity.CENTER);
-        box.setBackground(shape(color,28));
-        box.setElevation(dp(3));
-
-        TextView i=label(icon,29,textColor);
-        i.setGravity(Gravity.CENTER);
-        box.addView(i,new LinearLayout.LayoutParams(-1,dp(46)));
-
-        TextView t=label(text,13,textColor);
+        box.setBackground(shape(color,14));
+        TextView i=label(icon,18,textColor);
+        TextView t=label(text,11,textColor);
         t.setTypeface(null,1);
-        box.addView(t,new LinearLayout.LayoutParams(-1,dp(28)));
-
+        box.addView(i,new LinearLayout.LayoutParams(dp(26),-1));
+        box.addView(t,new LinearLayout.LayoutParams(0,-1,1));
         box.setClickable(true);
         box.setFocusable(true);
         return box;
@@ -135,15 +161,38 @@ public class MainActivity extends Activity {
         return new ArrayList<>(((StorageManager)getSystemService(STORAGE_SERVICE)).getStorageVolumes());
     }
 
+    StorageVolume findVolumeForAction(String action){
+        ArrayList<StorageVolume> removable=new ArrayList<>();
+        for(StorageVolume v:vols()) if(v.isRemovable()) removable.add(v);
+        if(removable.isEmpty()) return null;
+        if("unmount".equals(action)){
+            for(StorageVolume v:removable) if("mounted".equalsIgnoreCase(v.getState())) return v;
+        }else{
+            for(StorageVolume v:removable) if(!"mounted".equalsIgnoreCase(v.getState())) return v;
+        }
+        return removable.get(0);
+    }
+
+    String stateText(StorageVolume v){
+        String s=v.getState()==null?"":v.getState().toLowerCase(Locale.ROOT);
+        if("mounted".equals(s)) return "● מחובר";
+        if("unmounted".equals(s) || "ejected".equals(s) || "removed".equals(s)) return "○ בחוץ";
+        if("checking".equals(s)) return "בודק כרטיס…";
+        if("mounted_ro".equals(s)) return "מחובר • קריאה בלבד";
+        return s.isEmpty()?"המצב לא ידוע":"מצב: "+s;
+    }
+    int stateColor(StorageVolume v){
+        return "mounted".equalsIgnoreCase(v.getState())?Color.rgb(80,210,145):gray;
+    }
 
     String volumeName(StorageVolume v){
         String desc="";
         try { desc=v.getDescription(this); } catch(Exception ignored) {}
         String d=desc==null?"":desc.toLowerCase(Locale.ROOT);
-        if(d.contains("usb") || d.contains("otg")) return "🔌  אחסון OTG / USB";
-        if(d.contains("sd")) return "💳  אחסון חיצוני • כרטיס SD";
-        if(v.getUuid()!=null) return "💳  אחסון חיצוני • כרטיס SD";
-        return "🔌  אחסון OTG / USB";
+        if(d.contains("usb") || d.contains("otg")) return "אחסון OTG / USB";
+        if(d.contains("sd")) return "אחסון חיצוני • כרטיס SD";
+        if(v.getUuid()!=null) return "אחסון חיצוני • כרטיס SD";
+        return "אחסון OTG / USB";
     }
 
     void rootCmd(String a,StorageVolume v){
@@ -162,14 +211,25 @@ public class MainActivity extends Activity {
                         }
                         if(id!=null)break;
                     }
+                } else {
+                    for(String line:list.split("\\r?\\n")){
+                        String[] z=line.trim().split("\\s+");
+                        if(z.length>=2 && z[0].startsWith("public:") &&
+                           (("unmount".equals(a)&&"mounted".equalsIgnoreCase(z[1])) ||
+                            ("mount".equals(a)&&!"mounted".equalsIgnoreCase(z[1])))){
+                            id=z[0]; break;
+                        }
+                    }
                 }
                 if(id==null)throw new IOException("לא נמצא מזהה לכונן.\n"+list);
-                String cmd="sm "+a+" "+id;
-                String out=runRoot(cmd);
-                runOnUiThread(()->new AlertDialog.Builder(this)
-                    .setTitle(a.equals("unmount")?"הוצאה בטוחה":"טעינה מחדש")
-                    .setMessage("בוצע בהצלחה"+(out.isEmpty()?"":"\n\n"+out))
-                    .setPositiveButton("אישור",null).show());
+                String out=runRoot("sm "+a+" "+id);
+                runOnUiThread(()->{
+                    new AlertDialog.Builder(this)
+                        .setTitle(a.equals("unmount")?"הוצאה בטוחה":"טעינה מחדש")
+                        .setMessage("הפעולה הסתיימה"+(out.isEmpty()?"":"\n\n"+out))
+                        .setPositiveButton("אישור",null).show();
+                    render();
+                });
             }catch(Exception e){
                 runOnUiThread(()->new AlertDialog.Builder(this)
                     .setTitle("הפעולה נכשלה")
