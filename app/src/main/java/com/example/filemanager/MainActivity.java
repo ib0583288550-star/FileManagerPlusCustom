@@ -28,6 +28,10 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle b){
         super.onCreate(b);
         build();
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 4102);
+        }
         String action=getIntent().getStringExtra("tile_action");
         if(action!=null) {
             StorageVolume v=findVolumeForAction(action);
@@ -38,6 +42,7 @@ public class MainActivity extends Activity {
             getIntent().removeExtra("tile_action");
         }
     }
+    
     void build(){
         LinearLayout root=new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -239,7 +244,6 @@ public class MainActivity extends Activity {
                 if(id==null)throw new IOException("לא נמצא מזהה לכונן.\n"+list);
                 String out=runRoot("sm "+a+" "+id);
                 runOnUiThread(()->{
-                    
                     render();
                     Handler h=new Handler(Looper.getMainLooper());
                     h.postDelayed(()->render(),700);
