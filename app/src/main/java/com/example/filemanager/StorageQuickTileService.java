@@ -5,6 +5,8 @@ import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.os.storage.StorageManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.storage.StorageVolume;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -76,8 +78,15 @@ public class StorageQuickTileService extends TileService {
                 }
                 if(id==null)throw new IOException("לא נמצא מזהה לכרטיס.");
                 runRoot("sm "+action+" "+id);
-            }catch(Exception ignored){
-                // Keep the quick-settings tile action silent and do not launch the app.
+                String successMessage="unmount".equals(action)?"הכרטיס הוצא בהצלחה":"הכרטיס נטען בהצלחה";
+                new Handler(Looper.getMainLooper()).post(()->showDialog(new AlertDialog.Builder(this)
+                    .setMessage(successMessage)
+                    .setPositiveButton("אישור",null).create()));
+            }catch(Exception error){
+                String failureMessage="לא ניתן לבצע את הפעולה בכרטיס";
+                new Handler(Looper.getMainLooper()).post(()->showDialog(new AlertDialog.Builder(this)
+                    .setMessage(failureMessage)
+                    .setPositiveButton("אישור",null).create()));
             }
         }).start();
     }
