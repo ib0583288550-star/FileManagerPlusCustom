@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
         LinearLayout header=new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
         TextView refresh=label("↻",27,dark);
-        refresh.setOnClickListener(v->{render(); Toast.makeText(this,"זיהוי האחסון רוענן",Toast.LENGTH_SHORT).show();});
+        refresh.setOnClickListener(v->{render();});
         header.addView(refresh,new LinearLayout.LayoutParams(dp(48),dp(62)));
         header.addView(title,new LinearLayout.LayoutParams(0,dp(62),1));
         root.addView(header);
@@ -239,7 +239,7 @@ public class MainActivity extends Activity {
                 if(id==null)throw new IOException("לא נמצא מזהה לכונן.\n"+list);
                 String out=runRoot("sm "+a+" "+id);
                 runOnUiThread(()->{
-                    Toast.makeText(this,a.equals("unmount")?"הכרטיס הוצא בהצלחה":"הכרטיס נטען בהצלחה",Toast.LENGTH_LONG).show();
+                    
                     render();
                     Handler h=new Handler(Looper.getMainLooper());
                     h.postDelayed(()->render(),700);
