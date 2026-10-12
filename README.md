@@ -14,8 +14,12 @@ Open GitHub Actions and run **Build APK** manually. The workflow uploads `app-de
 
 This is an original implementation; it does not include proprietary File Manager Plus source code or assets.
 
-
 ## Version 1.10
 - Quick Settings tile can open the app directly or show a Yes/No confirmation dialog.
 - Includes a built-in storage-manager app icon.
 - Adds refresh and clearer storage labels for internal, external, and OTG storage.
+
+## Version 1.22
+- Shows a system notification after mounting or ejecting storage from the Quick Settings tile.
+- Requests notification permission on Android 13 and newer.
+- Keeps the same app ID so it can be installed as an update.
