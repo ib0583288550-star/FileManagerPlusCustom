@@ -28,7 +28,6 @@ public class TileConfirmActivity extends Activity {
         }
         if(target==null) {
             new AlertDialog.Builder(this)
-                .setTitle("מנהל אחסון")
                 .setMessage("לא זוהה כרטיס חיצוני או OTG. חבר כרטיס ולחץ על רענון.")
                 .setPositiveButton("אישור",(d,w)->finish())
                 .setOnCancelListener(d->finish())
@@ -39,7 +38,6 @@ public class TileConfirmActivity extends Activity {
         action=mounted?"unmount":"mount";
         String message=mounted?"האם להוציא את הכרטיס?":"הכרטיס בחוץ. האם לטעון אותו?";
         new AlertDialog.Builder(this)
-            .setTitle("מנהל אחסון")
             .setMessage(message)
             .setPositiveButton("כן",(d,w)->performAction())
             .setNegativeButton("לא",(d,w)->finish())
@@ -74,10 +72,10 @@ public class TileConfirmActivity extends Activity {
                         }
                     }
                 }
-                if(id==null) throw new IOException("לא נמצא מזהה לכרטיס.\n"+list);
-                String output=runRoot("sm "+action+" "+id);
+                if(id==null) throw new IOException("לא נמצא מזהה לכרטיס.\\n"+list);
+                runRoot("sm "+action+" "+id);
                 runOnUiThread(()->{
-                    Toast.makeText(this,action.equals("unmount")?"בקשת ההוצאה נשלחה":"בקשת הטעינה נשלחה",Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,action.equals("unmount")?"הכרטיס הוצא בהצלחה":"הכרטיס נטען בהצלחה",Toast.LENGTH_LONG).show();
                     finish();
                 });
             } catch(Exception e) {
@@ -100,7 +98,7 @@ public class TileConfirmActivity extends Activity {
         while((count=input.read(buffer))!=-1) output.write(buffer,0,count);
         int code=process.waitFor();
         String result=output.toString("UTF-8").trim();
-        if(code!=0) throw new IOException("קוד "+code+"\n"+(result.isEmpty()?"ללא פלט":result));
+        if(code!=0) throw new IOException("קוד "+code+"\\n"+(result.isEmpty()?"ללא פלט":result));
         return result;
     }
 }
