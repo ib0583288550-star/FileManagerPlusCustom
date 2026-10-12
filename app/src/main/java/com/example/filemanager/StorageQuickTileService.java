@@ -10,7 +10,7 @@ public class StorageQuickTileService extends TileService {
         super.onStartListening();
         Tile tile=getQsTile();
         if(tile!=null){
-            tile.setLabel("מנהל אחסון");
+            tile.setLabel("הוצאת כרטיס");
             tile.setIcon(Icon.createWithResource(this, R.drawable.qs_storage_icon));
             tile.setState(Tile.STATE_ACTIVE);
             tile.updateTile();
