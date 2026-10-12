@@ -1,6 +1,10 @@
 package com.example.filemanager;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.os.storage.StorageManager;
@@ -16,6 +20,7 @@ import java.util.Locale;
 
 public class StorageQuickTileService extends TileService {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private static final String CHANNEL_ID = "storage_action_results";
 
     @Override public void onStartListening() {
         super.onStartListening();
@@ -107,13 +112,37 @@ public class StorageQuickTileService extends TileService {
             }
             final String resultMessage = message;
             mainHandler.post(() -> {
-                // A TileService may no longer be allowed to open a dialog after the tile closes.
-                // A Toast gives feedback without reopening the app or showing a dialog window.
-                Toast.makeText(getApplicationContext(), resultMessage, Toast.LENGTH_LONG).show();
+                showResultNotification(resultMessage);
                 Tile tile = getQsTile();
                 if (tile != null) tile.updateTile();
             });
         }).start();
+    }
+
+    private void showResultNotification(String message) {
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (manager == null) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID, "הודעות מנהל אחסון", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("הודעות לאחר טעינה או הוצאה של כרטיס");
+            manager.createNotificationChannel(channel);
+        }
+        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            ? new Notification.Builder(this, CHANNEL_ID)
+            : new Notification.Builder(this);
+        builder.setSmallIcon(R.drawable.qs_storage_icon)
+            .setContentTitle("מנהל אחסון")
+            .setContentText(message)
+            .setStyle(new Notification.BigTextStyle().bigText(message))
+            .setAutoCancel(true)
+            .setCategory(Notification.CATEGORY_STATUS)
+            .setPriority(Notification.PRIORITY_HIGH);
+        try {
+            manager.notify(2201, builder.build());
+        } catch (SecurityException denied) {
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        }
     }
 
     private String runRoot(String command) throws Exception {
