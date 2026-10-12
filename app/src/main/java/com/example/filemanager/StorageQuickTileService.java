@@ -1,6 +1,7 @@
 package com.example.filemanager;
 
 import android.content.Intent;
+import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
@@ -8,7 +9,12 @@ public class StorageQuickTileService extends TileService {
     @Override public void onStartListening() {
         super.onStartListening();
         Tile tile=getQsTile();
-        if(tile!=null){ tile.setLabel("מנהל אחסון"); tile.setState(Tile.STATE_ACTIVE); tile.updateTile(); }
+        if(tile!=null){
+            tile.setLabel("מנהל אחסון");
+            tile.setIcon(Icon.createWithResource(this, R.drawable.qs_storage_icon));
+            tile.setState(Tile.STATE_ACTIVE);
+            tile.updateTile();
+        }
     }
     @Override public void onClick() {
         super.onClick();
