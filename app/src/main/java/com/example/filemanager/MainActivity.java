@@ -48,9 +48,6 @@ public class MainActivity extends Activity {
         title.setTypeface(null,1);
         LinearLayout header=new LinearLayout(this);
         header.setGravity(Gravity.CENTER_VERTICAL);
-        TextView settings=label("⚙",22,dark);
-        settings.setOnClickListener(v->about());
-        header.addView(settings,new LinearLayout.LayoutParams(dp(48),dp(62)));
         TextView refresh=label("↻",27,dark);
         refresh.setOnClickListener(v->{render(); Toast.makeText(this,"זיהוי האחסון רוענן",Toast.LENGTH_SHORT).show();});
         header.addView(refresh,new LinearLayout.LayoutParams(dp(48),dp(62)));
@@ -63,14 +60,12 @@ public class MainActivity extends Activity {
         body.setPadding(dp(14),dp(8),dp(14),dp(18));
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1));
 
+        TextView credit=label("y.b apps",11,gray);
+        credit.setPadding(0,dp(4),0,dp(12));
+        root.addView(credit,new LinearLayout.LayoutParams(-1,dp(30)));
+
         setContentView(root);
         render();
-    }
-
-    void about(){
-        new AlertDialog.Builder(this).setTitle("מנהל אחסון")
-            .setMessage("זיהוי אחסון חיצוני ו־OTG, רענון הרשימה וטעינה או הוצאה בטוחה.\n\ny.b apps")
-            .setPositiveButton("אישור",null).show();
     }
 
     void render(){
@@ -129,17 +124,37 @@ public class MainActivity extends Activity {
     }
 
     void confirmAction(StorageVolume v,String action){
-        boolean mounted="mounted".equalsIgnoreCase(v.getState());
-        String actual=action;
-        String message;
-        if("unmount".equals(action)){
-            message="האם להוציא את "+volumeName(v)+"?";
-        }else{
-            message="האם לטעון את "+volumeName(v)+"?";
-        }
-        new AlertDialog.Builder(this).setTitle("אישור פעולה").setMessage(message)
-            .setPositiveButton("כן",(d,w)->rootCmd(actual,v))
-            .setNegativeButton("לא",null).show();
+        String message="unmount".equals(action)
+            ?"האם להוציא את "+volumeName(v)+"?"
+            :"האם לטעון את "+volumeName(v)+"?";
+        Dialog dialog=new Dialog(this);
+        LinearLayout panel=new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setPadding(dp(20),dp(18),dp(20),dp(16));
+        panel.setBackground(shape(card,20));
+        TextView heading=label("אישור פעולה",18,dark);
+        heading.setTypeface(null,1);
+        panel.addView(heading,new LinearLayout.LayoutParams(-1,dp(36)));
+        TextView prompt=label(message,15,dark);
+        prompt.setPadding(dp(4),dp(8),dp(4),dp(18));
+        panel.addView(prompt,new LinearLayout.LayoutParams(-1,-2));
+        LinearLayout buttons=new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        buttons.setGravity(Gravity.CENTER);
+        LinearLayout no=smallButton("","לא",Color.rgb(34,45,61),dark);
+        LinearLayout yes=smallButton("","כן",blue,Color.WHITE);
+        LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(0,dp(44),1);
+        bp.leftMargin=dp(5); bp.rightMargin=dp(5);
+        buttons.addView(no,bp);
+        buttons.addView(yes,new LinearLayout.LayoutParams(0,dp(44),1));
+        panel.addView(buttons);
+        dialog.setContentView(panel);
+        if(dialog.getWindow()!=null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog.setCanceledOnTouchOutside(true);
+        no.setOnClickListener(x->dialog.dismiss());
+        yes.setOnClickListener(x->{dialog.dismiss();rootCmd(action,v);});
+        dialog.show();
+        if(dialog.getWindow()!=null) dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
     }
 
     LinearLayout smallButton(String icon,String text,int color,int textColor){
@@ -224,11 +239,12 @@ public class MainActivity extends Activity {
                 if(id==null)throw new IOException("לא נמצא מזהה לכונן.\n"+list);
                 String out=runRoot("sm "+a+" "+id);
                 runOnUiThread(()->{
-                    new AlertDialog.Builder(this)
-                        .setTitle(a.equals("unmount")?"הוצאה בטוחה":"טעינה מחדש")
-                        .setMessage("הפעולה הסתיימה"+(out.isEmpty()?"":"\n\n"+out))
-                        .setPositiveButton("אישור",null).show();
+                    Toast.makeText(this,a.equals("unmount")?"הכרטיס הוצא בהצלחה":"הכרטיס נטען בהצלחה",Toast.LENGTH_LONG).show();
                     render();
+                    Handler h=new Handler(Looper.getMainLooper());
+                    h.postDelayed(()->render(),700);
+                    h.postDelayed(()->render(),1600);
+                    h.postDelayed(()->render(),3000);
                 });
             }catch(Exception e){
                 runOnUiThread(()->new AlertDialog.Builder(this)
