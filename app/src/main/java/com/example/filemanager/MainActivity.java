@@ -110,9 +110,9 @@ public class MainActivity extends Activity {
             cp.leftMargin=dp(8);
 
             LinearLayout mount=smallButton("↻","טעינה",blue,Color.WHITE);
-            mount.setOnClickListener(x->confirmAction(v,"mount"));
+            mount.setOnClickListener(x->rootCmd("mount",v));
             LinearLayout eject=smallButton("⏏","הוצאה",Color.rgb(28,38,52),dark);
-            eject.setOnClickListener(x->confirmAction(v,"unmount"));
+            eject.setOnClickListener(x->rootCmd("unmount",v));
             controls.addView(mount,new LinearLayout.LayoutParams(-1,dp(42)));
             Space gap=new Space(this);
             controls.addView(gap,new LinearLayout.LayoutParams(1,dp(6)));
