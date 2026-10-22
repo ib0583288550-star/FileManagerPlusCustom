@@ -1,7 +1,9 @@
 package com.example.filemanager;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
@@ -9,17 +11,17 @@ import android.widget.Toast;
 
 abstract class BaseAppTileService extends TileService {
     protected abstract int slot();
+
     @Override public void onStartListening() {
         super.onStartListening();
-        Tile tile=getQsTile();
-        if(tile==null)return;
-        String key="app_tile_"+slot();
-        String label=getSharedPreferences("app_tiles",MODE_PRIVATE).getString(key+"_label","");
-        tile.setLabel(label.isEmpty()?"בחר אפליקציה "+slot():label);
-        tile.setIcon(Icon.createWithResource(this,R.drawable.qs_storage_icon));
-        tile.setState(Tile.STATE_ACTIVE);
-        tile.updateTile();
+        updateAppTile();
     }
+
+    @Override public void onTileAdded() {
+        super.onTileAdded();
+        updateAppTile();
+    }
+
     @Override public void onClick() {
         super.onClick();
         String pkg=getSharedPreferences("app_tiles",MODE_PRIVATE).getString("app_tile_"+slot(),"");
@@ -35,5 +37,28 @@ abstract class BaseAppTileService extends TileService {
         } catch(Exception e) {
             Toast.makeText(this,"לא ניתן לפתוח את האפליקציה שנבחרה",Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void updateAppTile(){
+        Tile tile=getQsTile();
+        if(tile==null)return;
+        String key="app_tile_"+slot();
+        String pkg=getSharedPreferences("app_tiles",MODE_PRIVATE).getString(key,"");
+        String label=getSharedPreferences("app_tiles",MODE_PRIVATE).getString(key+"_label","");
+        tile.setLabel(label.isEmpty()?"בחר אפליקציה "+slot():label);
+        try {
+            Drawable appIcon=pkg.isEmpty()?getDrawable(android.R.drawable.sym_def_app_icon):getPackageManager().getApplicationIcon(pkg);
+            if(appIcon==null)throw new IllegalStateException("missing icon");
+            int size=(int)(48*getResources().getDisplayMetrics().density);
+            Bitmap bitmap=Bitmap.createBitmap(size,size,Bitmap.Config.ARGB_8888);
+            Canvas canvas=new Canvas(bitmap);
+            appIcon.setBounds(0,0,size,size);
+            appIcon.draw(canvas);
+            tile.setIcon(Icon.createWithBitmap(bitmap));
+        } catch(Exception e) {
+            tile.setIcon(Icon.createWithResource(this,android.R.drawable.sym_def_app_icon));
+        }
+        tile.setState(Tile.STATE_ACTIVE);
+        tile.updateTile();
     }
 }
