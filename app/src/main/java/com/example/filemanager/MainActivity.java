@@ -58,7 +58,9 @@ public class MainActivity extends Activity {
 
         LinearLayout header=new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL);
         header.setPadding(dp(18),dp(4),dp(12),dp(4));
-        TextView mark=centered("▦",25,Color.WHITE); mark.setBackground(gradient(blue,Color.rgb(126,82,255),16));
+        android.widget.ImageView mark=new android.widget.ImageView(this);
+        mark.setImageResource(R.drawable.storage_manager_icon);
+        mark.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
         header.addView(mark,new LinearLayout.LayoutParams(dp(48),dp(48)));
         LinearLayout titleBox=new LinearLayout(this); titleBox.setOrientation(LinearLayout.VERTICAL);
         titleBox.setPadding(dp(12),0,0,0);
@@ -107,7 +109,7 @@ public class MainActivity extends Activity {
                 .setPositiveButton("הבנתי",null).show(); return true;
         });
         popup.getMenu().add("אודות").setOnMenuItemClickListener(i->{
-            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.24")
+            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.26")
                 .setMessage("כלים מהירים לניהול כרטיסי SD וחיבורי OTG.\n\ny.b apps")
                 .setPositiveButton("סגירה",null).show(); return true;
         });
