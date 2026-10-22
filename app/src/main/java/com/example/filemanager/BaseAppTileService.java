@@ -50,15 +50,17 @@ abstract class BaseAppTileService extends TileService {
             Drawable appIcon=pkg.isEmpty()?getDrawable(android.R.drawable.sym_def_app_icon):getPackageManager().getApplicationIcon(pkg);
             if(appIcon==null)throw new IllegalStateException("missing icon");
             int size=(int)(48*getResources().getDisplayMetrics().density);
+            int iconSize=(int)(36*getResources().getDisplayMetrics().density);
             Bitmap bitmap=Bitmap.createBitmap(size,size,Bitmap.Config.ARGB_8888);
             Canvas canvas=new Canvas(bitmap);
-            appIcon.setBounds(0,0,size,size);
+            int inset=(size-iconSize)/2;
+            appIcon.setBounds(inset,inset,inset+iconSize,inset+iconSize);
             appIcon.draw(canvas);
             tile.setIcon(Icon.createWithBitmap(bitmap));
         } catch(Exception e) {
             tile.setIcon(Icon.createWithResource(this,android.R.drawable.sym_def_app_icon));
         }
-        tile.setState(Tile.STATE_ACTIVE);
+        tile.setState(Tile.STATE_INACTIVE);
         tile.updateTile();
     }
 }
