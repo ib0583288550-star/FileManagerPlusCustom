@@ -226,7 +226,17 @@ public class MainActivity extends Activity {
             box.setPadding(dp(15),dp(14),dp(15),dp(14)); box.setBackground(shape(card,20));
             LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,-2); bp.bottomMargin=dp(11);
             LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
-            TextView icon=centered("▦",22,Color.WHITE); icon.setBackground(gradient(blue,cyan,14));
+            android.widget.ImageView icon=new android.widget.ImageView(this);
+            icon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+            icon.setPadding(dp(4),dp(4),dp(4),dp(4));
+            if(!pkg.isEmpty()){
+                try { icon.setImageDrawable(getPackageManager().getApplicationIcon(pkg)); }
+                catch(Exception ignored){ icon.setImageResource(android.R.drawable.sym_def_app_icon); }
+                icon.setBackground(shape(Color.rgb(34,45,67),14));
+            }else{
+                icon.setImageResource(android.R.drawable.sym_def_app_icon);
+                icon.setBackground(shape(Color.rgb(34,45,67),14));
+            }
             row.addView(icon,new LinearLayout.LayoutParams(dp(46),dp(46)));
             LinearLayout info=new LinearLayout(this); info.setOrientation(LinearLayout.VERTICAL); info.setPadding(dp(12),0,dp(8),0);
             TextView title=text(names[i],15,dark); title.setTypeface(null,1);
@@ -258,17 +268,44 @@ public class MainActivity extends Activity {
         Collections.sort(apps,(a,b)->String.valueOf(a.loadLabel(pm)).compareToIgnoreCase(String.valueOf(b.loadLabel(pm))));
         ArrayList<android.content.pm.ResolveInfo> filtered=new ArrayList<>();
         for(android.content.pm.ResolveInfo app:apps) if(!getPackageName().equals(app.activityInfo.packageName)) filtered.add(app);
-        String[] labels=new String[filtered.size()];
-        for(int i=0;i<filtered.size();i++) labels[i]=String.valueOf(filtered.get(i).loadLabel(pm));
-        if(labels.length==0){Toast.makeText(this,"לא נמצאו אפליקציות לבחירה",Toast.LENGTH_SHORT).show();return;}
-        new AlertDialog.Builder(this).setTitle("בחר אפליקציה לאריח "+slot).setItems(labels,(d,which)->{
-            android.content.pm.ResolveInfo chosen=filtered.get(which);
-            getSharedPreferences("app_tiles",MODE_PRIVATE).edit()
-                .putString(key,chosen.activityInfo.packageName)
-                .putString(key+"_label",String.valueOf(chosen.loadLabel(pm))).apply();
-            render();
-            Toast.makeText(this,"האריח עודכן. אם הוא כבר נוסף למעלה, הסר והוסף אותו מחדש.",Toast.LENGTH_LONG).show();
-        }).setNegativeButton("ביטול",null).show();
+        if(filtered.isEmpty()){Toast.makeText(this,"לא נמצאו אפליקציות לבחירה",Toast.LENGTH_SHORT).show();return;}
+
+        ScrollView scroll=new ScrollView(this);
+        LinearLayout list=new LinearLayout(this); list.setOrientation(LinearLayout.VERTICAL);
+        list.setPadding(dp(10),dp(6),dp(10),dp(6)); scroll.addView(list);
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("בחר אפליקציה לאריח "+slot)
+            .setView(scroll).setNegativeButton("ביטול",null).create();
+
+        for(android.content.pm.ResolveInfo app:filtered){
+            LinearLayout item=new LinearLayout(this); item.setGravity(Gravity.CENTER_VERTICAL);
+            item.setPadding(dp(10),dp(8),dp(10),dp(8));
+            item.setBackground(shape(Color.rgb(24,35,56),14));
+            LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,dp(58));
+            itemParams.bottomMargin=dp(5);
+            android.widget.ImageView appIcon=new android.widget.ImageView(this);
+            appIcon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+            try { appIcon.setImageDrawable(app.loadIcon(pm)); }
+            catch(Exception ignored){ appIcon.setImageResource(android.R.drawable.sym_def_app_icon); }
+            item.addView(appIcon,new LinearLayout.LayoutParams(dp(38),dp(38)));
+            TextView appLabel=text(String.valueOf(app.loadLabel(pm)),15,dark);
+            appLabel.setPadding(dp(12),0,dp(8),0);
+            item.addView(appLabel,new LinearLayout.LayoutParams(0,-1,1));
+            list.addView(item,itemParams);
+            item.setOnClickListener(v->{
+                prefsSaveApp(key,app,pm);
+                dialog.dismiss();
+                render();
+                Toast.makeText(this,"האריח עודכן. אם כבר הוספת אותו למעלה, הסר והוסף אותו מחדש.",Toast.LENGTH_LONG).show();
+            });
+        }
+        dialog.show();
+        dialog.getWindow().setLayout(-1,Math.min(getResources().getDisplayMetrics().heightPixels-dp(120),dp(560)));
+    }
+
+    void prefsSaveApp(String key,android.content.pm.ResolveInfo chosen,android.content.pm.PackageManager pm){
+        getSharedPreferences("app_tiles",MODE_PRIVATE).edit()
+            .putString(key,chosen.activityInfo.packageName)
+            .putString(key+"_label",String.valueOf(chosen.loadLabel(pm))).apply();
     }
 
     LinearLayout actionButton(String icon,String title,int color,int fg){
