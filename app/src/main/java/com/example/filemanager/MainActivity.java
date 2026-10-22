@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
                 .setPositiveButton("הבנתי",null).show(); return true;
         });
         popup.getMenu().add("אודות").setOnMenuItemClickListener(i->{
-            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.26")
+            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.27")
                 .setMessage("כלים מהירים לניהול כרטיסי SD וחיבורי OTG.\n\ny.b apps")
                 .setPositiveButton("סגירה",null).show(); return true;
         });
