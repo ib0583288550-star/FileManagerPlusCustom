@@ -12,7 +12,8 @@ import java.io.*;
 import java.util.*;
 
 public class MainActivity extends Activity {
-    LinearLayout body;
+    LinearLayout body, tabBar;
+    int selectedTab = 0;
     int bg=Color.rgb(8,13,25), dark=Color.rgb(242,246,255), muted=Color.rgb(151,166,190);
     int blue=Color.rgb(76,112,255), cyan=Color.rgb(43,211,205), card=Color.rgb(19,29,49);
     int green=Color.rgb(66,220,156), red=Color.rgb(255,111,132);
@@ -69,6 +70,9 @@ public class MainActivity extends Activity {
         header.addView(menu,new LinearLayout.LayoutParams(dp(42),dp(48)));
         root.addView(header,new LinearLayout.LayoutParams(-1,dp(66)));
 
+        tabBar=new LinearLayout(this); tabBar.setPadding(dp(14),dp(4),dp(14),dp(8)); tabBar.setOrientation(LinearLayout.HORIZONTAL);
+        root.addView(tabBar,new LinearLayout.LayoutParams(-1,dp(58)));
+
         ScrollView scroll=new ScrollView(this); scroll.setFillViewport(true);
         body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL);
         body.setPadding(dp(16),dp(8),dp(16),dp(20));
@@ -76,7 +80,22 @@ public class MainActivity extends Activity {
         root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
         TextView credit=centered("y.b apps  •  מנהל אחסון",11,muted);
         root.addView(credit,new LinearLayout.LayoutParams(-1,dp(32)));
-        setContentView(root); render();
+        setContentView(root); renderTabs(); render();
+    }
+
+    void renderTabs(){
+        tabBar.removeAllViews();
+        String[] labels={"▤  מנהל אחסון","▦  אריחי אפליקציות"};
+        for(int i=0;i<labels.length;i++){
+            final int tab=i;
+            TextView item=centered(labels[i],13,selectedTab==i?Color.WHITE:muted);
+            item.setTypeface(null,1);
+            item.setBackground(shape(selectedTab==i?Color.rgb(53,75,145):card,16));
+            LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(44),1);
+            p.leftMargin=dp(4); p.rightMargin=dp(4);
+            tabBar.addView(item,p);
+            item.setOnClickListener(v->{selectedTab=tab;renderTabs();render();});
+        }
     }
 
     void showMenu(View anchor){
@@ -97,6 +116,11 @@ public class MainActivity extends Activity {
 
     void render(){
         body.removeAllViews();
+        if(selectedTab==1){ renderAppTiles(); return; }
+        renderStorage();
+    }
+
+    void renderStorage(){
         ArrayList<StorageVolume> removable=new ArrayList<>();
         for(StorageVolume v:vols()) if(v.isRemovable()) removable.add(v);
 
@@ -176,6 +200,75 @@ public class MainActivity extends Activity {
 
         TextView tip=text("טיפ: לפני הוצאה בטוחה, ודא שאין העברת קבצים פעילה.",12,muted);
         tip.setPadding(dp(4),dp(8),dp(4),dp(4)); body.addView(tip);
+    }
+
+    void renderAppTiles(){
+        TextView intro=text("הפוך אפליקציות לאריחים מהירים",22,dark); intro.setTypeface(null,1);
+        body.addView(intro);
+        TextView desc=text("בחר אפליקציה לכל משבצת, ואז הוסף את האריח המתאים למסך ההגדרות המהירות של Android.",13,muted);
+        desc.setPadding(0,dp(8),0,dp(16)); body.addView(desc);
+
+        if(Build.VERSION.SDK_INT<24){
+            LinearLayout notice=new LinearLayout(this); notice.setOrientation(LinearLayout.VERTICAL);
+            notice.setPadding(dp(16),dp(18),dp(16),dp(18)); notice.setBackground(shape(card,20));
+            TextView n=text("האריחים של Android זמינים מ־Android 7.0 ומעלה. במכשיר Android 5 האפליקציה תמשיך לעבוד בכרטיסיית מנהל האחסון, אך המערכת לא תומכת באריחים מותאמים.",14,dark);
+            n.setGravity(Gravity.CENTER_VERTICAL); notice.addView(n); body.addView(notice); return;
+        }
+
+        String[] keys={"app_tile_1","app_tile_2","app_tile_3","app_tile_4"};
+        String[] names={"אריח אפליקציה 1","אריח אפליקציה 2","אריח אפליקציה 3","אריח אפליקציה 4"};
+        android.content.SharedPreferences prefs=getSharedPreferences("app_tiles",MODE_PRIVATE);
+        for(int i=0;i<keys.length;i++){
+            final int slot=i+1; final String key=keys[i];
+            String pkg=prefs.getString(key,"");
+            String appName=prefs.getString(key+"_label","");
+            LinearLayout box=new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL);
+            box.setPadding(dp(15),dp(14),dp(15),dp(14)); box.setBackground(shape(card,20));
+            LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,-2); bp.bottomMargin=dp(11);
+            LinearLayout row=new LinearLayout(this); row.setGravity(Gravity.CENTER_VERTICAL);
+            TextView icon=centered("▦",22,Color.WHITE); icon.setBackground(gradient(blue,cyan,14));
+            row.addView(icon,new LinearLayout.LayoutParams(dp(46),dp(46)));
+            LinearLayout info=new LinearLayout(this); info.setOrientation(LinearLayout.VERTICAL); info.setPadding(dp(12),0,dp(8),0);
+            TextView title=text(names[i],15,dark); title.setTypeface(null,1);
+            TextView state=text(pkg.isEmpty()?"לא נבחרה אפליקציה":appName,12,pkg.isEmpty()?muted:green);
+            info.addView(title); info.addView(state); row.addView(info,new LinearLayout.LayoutParams(0,-2,1));
+            box.addView(row);
+            LinearLayout actions=new LinearLayout(this); actions.setPadding(0,dp(12),0,0);
+            TextView choose=centered(pkg.isEmpty()?"בחירת אפליקציה":"שינוי אפליקציה",13,Color.WHITE);
+            choose.setTypeface(null,1); choose.setBackground(gradient(blue,Color.rgb(105,83,255),13));
+            actions.addView(choose,new LinearLayout.LayoutParams(0,dp(42),1));
+            TextView clear=centered("איפוס",13,muted); clear.setBackground(shape(Color.rgb(37,49,72),13));
+            LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(dp(78),dp(42)); cp.leftMargin=dp(8); actions.addView(clear,cp);
+            box.addView(actions);
+            choose.setOnClickListener(v->chooseApp(slot,key));
+            clear.setOnClickListener(v->{prefs.edit().remove(key).remove(key+"_label").apply();render();});
+            body.addView(box,bp);
+        }
+        LinearLayout hint=new LinearLayout(this); hint.setOrientation(LinearLayout.VERTICAL);
+        hint.setPadding(dp(15),dp(14),dp(15),dp(14)); hint.setBackground(shape(Color.rgb(24,39,65),18));
+        TextView h=text("איך מוסיפים אריח למעלה?",15,Color.rgb(156,190,255)); h.setTypeface(null,1);
+        TextView steps=text("1. בחר אפליקציה במשבצת כאן.\n2. משוך את וילון ההתראות פעמיים.\n3. לחץ על עריכה (עיפרון) וגרור את „אריח אפליקציה” לרשימת האריחים הפעילים.\n4. חזור על הפעולה עבור משבצות נוספות.",13,dark);
+        steps.setPadding(0,dp(8),0,0); hint.addView(h); hint.addView(steps); body.addView(hint);
+    }
+
+    void chooseApp(int slot,String key){
+        Intent query=new Intent(Intent.ACTION_MAIN,null); query.addCategory(Intent.CATEGORY_LAUNCHER);
+        android.content.pm.PackageManager pm=getPackageManager();
+        List<android.content.pm.ResolveInfo> apps=pm.queryIntentActivities(query,0);
+        Collections.sort(apps,(a,b)->String.valueOf(a.loadLabel(pm)).compareToIgnoreCase(String.valueOf(b.loadLabel(pm))));
+        ArrayList<android.content.pm.ResolveInfo> filtered=new ArrayList<>();
+        for(android.content.pm.ResolveInfo app:apps) if(!getPackageName().equals(app.activityInfo.packageName)) filtered.add(app);
+        String[] labels=new String[filtered.size()];
+        for(int i=0;i<filtered.size();i++) labels[i]=String.valueOf(filtered.get(i).loadLabel(pm));
+        if(labels.length==0){Toast.makeText(this,"לא נמצאו אפליקציות לבחירה",Toast.LENGTH_SHORT).show();return;}
+        new AlertDialog.Builder(this).setTitle("בחר אפליקציה לאריח "+slot).setItems(labels,(d,which)->{
+            android.content.pm.ResolveInfo chosen=filtered.get(which);
+            getSharedPreferences("app_tiles",MODE_PRIVATE).edit()
+                .putString(key,chosen.activityInfo.packageName)
+                .putString(key+"_label",String.valueOf(chosen.loadLabel(pm))).apply();
+            render();
+            Toast.makeText(this,"האריח עודכן. אם הוא כבר נוסף למעלה, הסר והוסף אותו מחדש.",Toast.LENGTH_LONG).show();
+        }).setNegativeButton("ביטול",null).show();
     }
 
     LinearLayout actionButton(String icon,String title,int color,int fg){
