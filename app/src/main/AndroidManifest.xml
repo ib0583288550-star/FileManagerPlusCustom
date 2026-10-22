@@ -1,9 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 <application android:theme="@style/AppTheme" android:label="מנהל אחסון" android:allowBackup="false" android:icon="@drawable/storage_manager_icon" android:supportsRtl="true">
 <activity android:name=".TileConfirmActivity" android:label="" android:theme="@style/TileConfirmTheme" android:exported="false" />
 <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
 <service android:name=".StorageQuickTileService" android:label="הוצאת כרטיס" android:icon="@drawable/qs_storage_icon" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" android:exported="true">
 <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE"/></intent-filter>
 </service>
+<service android:name=".AppTileService1" android:label="אריח אפליקציה 1" android:icon="@drawable/qs_storage_icon" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" android:exported="true"><intent-filter><action android:name="android.service.quicksettings.action.QS_TILE"/></intent-filter></service>
+<service android:name=".AppTileService2" android:label="אריח אפליקציה 2" android:icon="@drawable/qs_storage_icon" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" android:exported="true"><intent-filter><action android:name="android.service.quicksettings.action.QS_TILE"/></intent-filter></service>
+<service android:name=".AppTileService3" android:label="אריח אפליקציה 3" android:icon="@drawable/qs_storage_icon" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" android:exported="true"><intent-filter><action android:name="android.service.quicksettings.action.QS_TILE"/></intent-filter></service>
+<service android:name=".AppTileService4" android:label="אריח אפליקציה 4" android:icon="@drawable/qs_storage_icon" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE" android:exported="true"><intent-filter><action android:name="android.service.quicksettings.action.QS_TILE"/></intent-filter></service>
 </application></manifest>
