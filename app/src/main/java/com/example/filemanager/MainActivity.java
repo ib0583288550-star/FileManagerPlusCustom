@@ -58,12 +58,8 @@ public class MainActivity extends Activity {
 
         LinearLayout header=new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL);
         header.setPadding(dp(18),dp(4),dp(12),dp(4));
-        android.widget.ImageView mark=new android.widget.ImageView(this);
-        mark.setImageResource(R.drawable.storage_manager_icon);
-        mark.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-        header.addView(mark,new LinearLayout.LayoutParams(dp(48),dp(48)));
         LinearLayout titleBox=new LinearLayout(this); titleBox.setOrientation(LinearLayout.VERTICAL);
-        titleBox.setPadding(dp(12),0,0,0);
+        titleBox.setPadding(dp(4),0,0,0);
         TextView title=text("מנהל אחסון",21,dark); title.setTypeface(null,1);
         TextView subtitle=text("הכרטיסים והכוננים שלך",12,muted);
         titleBox.addView(title); titleBox.addView(subtitle);
@@ -253,7 +249,7 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(dp(78),dp(42)); cp.leftMargin=dp(8); actions.addView(clear,cp);
             box.addView(actions);
             choose.setOnClickListener(v->chooseApp(slot,key));
-            clear.setOnClickListener(v->{prefs.edit().remove(key).remove(key+"_label").apply();render();});
+            clear.setOnClickListener(v->{prefs.edit().remove(key).remove(key+"_label").apply();refreshAppTile(slot);render();});
             body.addView(box,bp);
         }
         LinearLayout hint=new LinearLayout(this); hint.setOrientation(LinearLayout.VERTICAL);
@@ -295,6 +291,7 @@ public class MainActivity extends Activity {
             list.addView(item,itemParams);
             item.setOnClickListener(v->{
                 prefsSaveApp(key,app,pm);
+                refreshAppTile(slot);
                 dialog.dismiss();
                 render();
                 Toast.makeText(this,"האריח עודכן. אם כבר הוספת אותו למעלה, הסר והוסף אותו מחדש.",Toast.LENGTH_LONG).show();
@@ -302,6 +299,19 @@ public class MainActivity extends Activity {
         }
         dialog.show();
         dialog.getWindow().setLayout(-1,Math.min(getResources().getDisplayMetrics().heightPixels-dp(120),dp(560)));
+    }
+
+    void refreshAppTile(int slot){
+        if(Build.VERSION.SDK_INT>=24){
+            android.content.ComponentName component;
+            switch(slot){
+                case 1: component=new android.content.ComponentName(this,AppTileService1.class); break;
+                case 2: component=new android.content.ComponentName(this,AppTileService2.class); break;
+                case 3: component=new android.content.ComponentName(this,AppTileService3.class); break;
+                default: component=new android.content.ComponentName(this,AppTileService4.class); break;
+            }
+            android.service.quicksettings.TileService.requestListeningState(this,component);
+        }
     }
 
     void prefsSaveApp(String key,android.content.pm.ResolveInfo chosen,android.content.pm.PackageManager pm){
