@@ -5,6 +5,7 @@ import android.os.*;
 import android.content.*;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.Icon;
 import android.os.storage.*;
 import android.view.*;
 import android.widget.*;
@@ -78,6 +79,31 @@ public class MainActivity extends Activity {
         setContentView(root); render();
     }
 
+    void requestStorageTile(){
+        if(Build.VERSION.SDK_INT>=33){
+            android.content.ComponentName component=new android.content.ComponentName(this,StorageQuickTileService.class);
+            android.service.quicksettings.TileService.requestAddTile(
+                this, component, "הוצאת כרטיס",
+                Icon.createWithResource(this,R.drawable.qs_storage_icon),
+                getMainExecutor(), result -> {
+                    if(result==android.service.quicksettings.TileService.RESULT_TILE_ADDED)
+                        Toast.makeText(this,"האריח נוסף להגדרות המהירות",Toast.LENGTH_LONG).show();
+                    else if(result==android.service.quicksettings.TileService.RESULT_TILE_ALREADY_ADDED)
+                        Toast.makeText(this,"האריח כבר נוסף",Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(this,"הוספת האריח בוטלה",Toast.LENGTH_SHORT).show();
+                });
+        }else if(Build.VERSION.SDK_INT>=24){
+            new AlertDialog.Builder(this).setTitle("הוספת אריח")
+                .setMessage("משוך את וילון ההתראות פעמיים, לחץ על עריכה (עיפרון), ואתר את האריח „הוצאת כרטיס” ברשימת האריחים הזמינים.")
+                .setPositiveButton("הבנתי",null).show();
+        }else{
+            new AlertDialog.Builder(this).setTitle("לא נתמך")
+                .setMessage("אריחים מהירים זמינים בגרסת Android 7.0 ומעלה.")
+                .setPositiveButton("אישור",null).show();
+        }
+    }
+
     void showMenu(View anchor){
         PopupMenu popup=new PopupMenu(this,anchor);
         popup.getMenu().add("רענון כוננים").setOnMenuItemClickListener(i->{render();return true;});
@@ -116,6 +142,15 @@ public class MainActivity extends Activity {
         hero.addView(count,countP);
         LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,-2); hp.bottomMargin=dp(20);
         body.addView(hero,hp);
+
+        TextView addTile=centered("＋   הוסף אריח בלחיצה",15,Color.WHITE);
+        addTile.setTypeface(null,1);
+        addTile.setBackground(gradient(Color.rgb(37,104,210),Color.rgb(53,77,190),16));
+        addTile.setElevation(dp(3));
+        LinearLayout.LayoutParams addTileParams=new LinearLayout.LayoutParams(-1,dp(52));
+        addTileParams.bottomMargin=dp(18);
+        body.addView(addTile,addTileParams);
+        addTile.setOnClickListener(v->requestStorageTile());
 
         LinearLayout section=new LinearLayout(this); section.setGravity(Gravity.CENTER_VERTICAL);
         TextView sectionTitle=text("כרטיסי הזיכרון שלי",18,dark); sectionTitle.setTypeface(null,1);
