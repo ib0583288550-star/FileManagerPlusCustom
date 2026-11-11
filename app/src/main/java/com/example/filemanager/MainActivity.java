@@ -88,10 +88,12 @@ public class MainActivity extends Activity {
                 component, "הוצאת כרטיס",
                 Icon.createWithResource(this,R.drawable.qs_storage_icon),
                 getMainExecutor(), result -> {
-                    if(result==android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED)
+                    if(result==android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED ||
+                       result==android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED) {
+                        getSharedPreferences("storage_settings",MODE_PRIVATE).edit().putBoolean("storage_tile_added",true).apply();
+                        render();
                         Toast.makeText(this,"האריח נוסף להגדרות המהירות",Toast.LENGTH_LONG).show();
-                    else if(result==android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED)
-                        Toast.makeText(this,"האריח כבר נוסף",Toast.LENGTH_LONG).show();
+                    }
                     else
                         Toast.makeText(this,"הוספת האריח בוטלה",Toast.LENGTH_SHORT).show();
                 });
@@ -145,14 +147,17 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-1,-2); hp.bottomMargin=dp(20);
         body.addView(hero,hp);
 
-        TextView addTile=centered("＋   הוסף אריח בלחיצה",15,Color.WHITE);
-        addTile.setTypeface(null,1);
-        addTile.setBackground(gradient(Color.rgb(37,104,210),Color.rgb(53,77,190),16));
-        addTile.setElevation(dp(3));
-        LinearLayout.LayoutParams addTileParams=new LinearLayout.LayoutParams(-1,dp(52));
-        addTileParams.bottomMargin=dp(18);
-        body.addView(addTile,addTileParams);
-        addTile.setOnClickListener(v->requestStorageTile());
+        boolean tileAdded=getSharedPreferences("storage_settings",MODE_PRIVATE).getBoolean("storage_tile_added",false);
+        if(!tileAdded) {
+            TextView addTile=centered("＋   הוסף אריח הוצאת כרטיס",15,Color.WHITE);
+            addTile.setTypeface(null,1);
+            addTile.setBackground(gradient(Color.rgb(37,104,210),Color.rgb(53,77,190),16));
+            addTile.setElevation(dp(3));
+            LinearLayout.LayoutParams addTileParams=new LinearLayout.LayoutParams(-1,dp(52));
+            addTileParams.bottomMargin=dp(18);
+            body.addView(addTile,addTileParams);
+            addTile.setOnClickListener(v->requestStorageTile());
+        }
 
         LinearLayout section=new LinearLayout(this); section.setGravity(Gravity.CENTER_VERTICAL);
         TextView sectionTitle=text("כרטיסי הזיכרון שלי",18,dark); sectionTitle.setTypeface(null,1);
