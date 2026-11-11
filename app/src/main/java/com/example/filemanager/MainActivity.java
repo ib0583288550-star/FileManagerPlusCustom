@@ -118,11 +118,11 @@ public class MainActivity extends Activity {
         popup.getMenu().add("רענון כוננים").setOnMenuItemClickListener(i->{render();return true;});
         popup.getMenu().add("איך זה עובד?").setOnMenuItemClickListener(i->{
             new AlertDialog.Builder(this).setTitle("מנהל אחסון")
-                .setMessage("האפליקציה מציגה אחסון חיצוני ו-OTG בלבד.\n\nטעינה והוצאה בטוחות עשויות לדרוש הרשאת Root. לפני הוצאה, עצור העתקת קבצים וסגור קבצים פתוחים.")
+                .setMessage("האפליקציה מציגה אחסון חיצוני ו-OTG בלבד.\n\nלחיצה על הוספת האריח פותחת את בקשת האישור הרשמית של Android 13 ומעלה. טעינה והוצאה בטוחות עשויות לדרוש הרשאת Root.")
                 .setPositiveButton("הבנתי",null).show(); return true;
         });
         popup.getMenu().add("אודות").setOnMenuItemClickListener(i->{
-            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.31")
+            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.33")
                 .setMessage("כלים מהירים לניהול כרטיסי SD וחיבורי OTG.\n\ny.b apps")
                 .setPositiveButton("סגירה",null).show(); return true;
         });
