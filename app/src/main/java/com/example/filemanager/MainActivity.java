@@ -82,13 +82,15 @@ public class MainActivity extends Activity {
     void requestStorageTile(){
         if(Build.VERSION.SDK_INT>=33){
             android.content.ComponentName component=new android.content.ComponentName(this,StorageQuickTileService.class);
-            android.service.quicksettings.TileService.requestAddTileService(
-                this, component, "הוצאת כרטיס",
+            android.app.StatusBarManager manager =
+                (android.app.StatusBarManager)getSystemService(Context.STATUS_BAR_SERVICE);
+            manager.requestAddTileService(
+                component, "הוצאת כרטיס",
                 Icon.createWithResource(this,R.drawable.qs_storage_icon),
                 getMainExecutor(), result -> {
-                    if(result==android.service.quicksettings.TileService.RESULT_TILE_ADDED)
+                    if(result==android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED)
                         Toast.makeText(this,"האריח נוסף להגדרות המהירות",Toast.LENGTH_LONG).show();
-                    else if(result==android.service.quicksettings.TileService.RESULT_TILE_ALREADY_ADDED)
+                    else if(result==android.app.StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED)
                         Toast.makeText(this,"האריח כבר נוסף",Toast.LENGTH_LONG).show();
                     else
                         Toast.makeText(this,"הוספת האריח בוטלה",Toast.LENGTH_SHORT).show();
