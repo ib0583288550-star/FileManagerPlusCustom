@@ -20,6 +20,18 @@ import java.util.Locale;
 
 public class StorageQuickTileService extends TileService {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    @Override public void onTileAdded() {
+        super.onTileAdded();
+        getSharedPreferences("storage_settings", MODE_PRIVATE).edit()
+            .putBoolean("storage_tile_added", true).apply();
+    }
+
+    @Override public void onTileRemoved() {
+        super.onTileRemoved();
+        getSharedPreferences("storage_settings", MODE_PRIVATE).edit()
+            .putBoolean("storage_tile_added", false).apply();
+    }
     private static final String CHANNEL_ID = "storage_action_results";
 
     @Override public void onStartListening() {
