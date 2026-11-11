@@ -154,13 +154,30 @@ public class MainActivity extends Activity {
 
         boolean tileAdded=getSharedPreferences("storage_settings",MODE_PRIVATE).getBoolean("storage_tile_added",false);
         if(!tileAdded) {
-            TextView addTile=centered("＋   הוסף אריח הוצאת כרטיס",15,Color.WHITE);
-            addTile.setTypeface(null,1);
-            addTile.setBackground(gradient(Color.rgb(37,104,210),Color.rgb(53,77,190),16));
-            addTile.setElevation(dp(3));
-            LinearLayout.LayoutParams addTileParams=new LinearLayout.LayoutParams(-1,dp(52));
+            LinearLayout addTile=new LinearLayout(this);
+            addTile.setGravity(Gravity.CENTER_VERTICAL);
+            addTile.setPadding(dp(16),dp(8),dp(14),dp(8));
+            addTile.setBackground(gradient(Color.rgb(37,104,210),Color.rgb(53,77,190),17));
+            addTile.setElevation(dp(4));
+            TextView plus=centered("＋",25,Color.WHITE);
+            plus.setBackground(shape(Color.argb(48,255,255,255),13));
+            addTile.addView(plus,new LinearLayout.LayoutParams(dp(42),dp(42)));
+            LinearLayout addTileText=new LinearLayout(this);
+            addTileText.setOrientation(LinearLayout.VERTICAL);
+            addTileText.setPadding(dp(12),0,0,0);
+            TextView addTitle=text("הוסף אריח הוצאת כרטיס",15,Color.WHITE);
+            addTitle.setTypeface(null,1);
+            TextView addSubtitle=text("גישה מהירה מווילון ההתראות",11,Color.rgb(222,232,255));
+            addTileText.addView(addTitle);
+            addTileText.addView(addSubtitle);
+            addTile.addView(addTileText,new LinearLayout.LayoutParams(0,-2,1));
+            TextView arrow=centered("‹",26,Color.WHITE);
+            addTile.addView(arrow,new LinearLayout.LayoutParams(dp(24),dp(42)));
+            LinearLayout.LayoutParams addTileParams=new LinearLayout.LayoutParams(-1,dp(64));
             addTileParams.bottomMargin=dp(18);
             body.addView(addTile,addTileParams);
+            addTile.setClickable(true);
+            addTile.setFocusable(true);
             addTile.setOnClickListener(v->requestStorageTile());
         }
 
