@@ -82,7 +82,7 @@ public class MainActivity extends Activity {
     void requestStorageTile(){
         if(Build.VERSION.SDK_INT>=33){
             android.content.ComponentName component=new android.content.ComponentName(this,StorageQuickTileService.class);
-            android.service.quicksettings.TileService.requestAddTile(
+            android.service.quicksettings.TileService.requestAddTileService(
                 this, component, "הוצאת כרטיס",
                 Icon.createWithResource(this,R.drawable.qs_storage_icon),
                 getMainExecutor(), result -> {
