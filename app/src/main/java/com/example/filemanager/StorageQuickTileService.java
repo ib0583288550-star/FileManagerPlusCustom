@@ -120,7 +120,7 @@ public class StorageQuickTileService extends TileService {
                 runRoot("sm " + action + " " + id);
                 message = "unmount".equals(action) ? "הכרטיס הוצא בהצלחה" : "הכרטיס נטען בהצלחה";
             } catch (Exception error) {
-                message = "לא ניתן לבצע את הפעולה בכרטיס";
+                message = "הפעולה נכשלה: " + (error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage());
             }
             final String resultMessage = message;
             mainHandler.post(() -> {
