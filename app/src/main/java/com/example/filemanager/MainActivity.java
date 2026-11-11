@@ -103,9 +103,12 @@ public class MainActivity extends Activity {
                         Toast.makeText(this,"הוספת האריח בוטלה",Toast.LENGTH_SHORT).show();
                 });
         }else if(Build.VERSION.SDK_INT>=24){
-            new AlertDialog.Builder(this).setTitle("הוספת אריח")
-                .setMessage("משוך את וילון ההתראות פעמיים, לחץ על עריכה (עיפרון), ואתר את האריח „הוצאת כרטיס” ברשימת האריחים הזמינים.")
-                .setPositiveButton("הבנתי",null).show();
+            new AlertDialog.Builder(this)
+                .setTitle("הוספת אריח הוצאת כרטיס")
+                .setMessage("תצוגה מקדימה בלבד של בקשת האישור.\n\nב-Android 12 אין API שמאפשר לאפליקציה לפתוח את חלונית האישור הרשמית. החלונית האמיתית נפתחת אוטומטית רק ב-Android 13 ומעלה.\n\nב-Android 12 הכפתורים כאן אינם מוסיפים את האריח.")
+                .setPositiveButton("אישור",null)
+                .setNegativeButton("ביטול",null)
+                .show();
         }else{
             new AlertDialog.Builder(this).setTitle("לא נתמך")
                 .setMessage("אריחים מהירים זמינים בגרסת Android 7.0 ומעלה.")
