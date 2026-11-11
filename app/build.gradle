@@ -1,7 +1,7 @@
 plugins { id 'com.android.application' }
 
 android { namespace 'com.example.filemanager'; compileSdk 35
-    defaultConfig { applicationId 'com.israel.storagemanager'; minSdk 33; targetSdk 35; versionCode 33; versionName '1.33' }
+    defaultConfig { applicationId 'com.israel.storagemanager'; minSdk 31; targetSdk 35; versionCode 34; versionName '1.34' }
 }
 
 dependencies {
