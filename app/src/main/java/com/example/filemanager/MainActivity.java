@@ -53,6 +53,11 @@ public class MainActivity extends Activity {
         }
     }
 
+    @Override protected void onResume(){
+        super.onResume();
+        if(body!=null) render();
+    }
+
     void build(){
         LinearLayout root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(bg); root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
@@ -117,7 +122,7 @@ public class MainActivity extends Activity {
                 .setPositiveButton("הבנתי",null).show(); return true;
         });
         popup.getMenu().add("אודות").setOnMenuItemClickListener(i->{
-            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.27")
+            new AlertDialog.Builder(this).setTitle("מנהל אחסון 1.31")
                 .setMessage("כלים מהירים לניהול כרטיסי SD וחיבורי OTG.\n\ny.b apps")
                 .setPositiveButton("סגירה",null).show(); return true;
         });
@@ -295,7 +300,15 @@ public class MainActivity extends Activity {
                            (("unmount".equals(a)&&"mounted".equalsIgnoreCase(z[1]))||("mount".equals(a)&&!"mounted".equalsIgnoreCase(z[1])))){id=z[0];break;}
                     }
                 }
-                if(id==null)throw new IOException("לא נמצא מזהה לכונן.\n"+list);
+                if(id==null){
+                    for(String line:list.split("\\r?\\n")){
+                        String[] z=line.trim().split("\\s+");
+                        if(z.length>=2 && z[0].startsWith("public:") &&
+                           (("unmount".equals(a)&&"mounted".equalsIgnoreCase(z[1])) ||
+                            ("mount".equals(a)&&!"mounted".equalsIgnoreCase(z[1])))) { id=z[0]; break; }
+                    }
+                }
+                if(id==null)throw new IOException("לא נמצא מזהה לכונן.\\n"+list);
                 runRoot("sm "+a+" "+id);
                 runOnUiThread(()->{
                     Toast.makeText(this,"unmount".equals(a)?"הפקודה להוצאה נשלחה":"הפקודה לטעינה נשלחה",Toast.LENGTH_SHORT).show();
